@@ -34,10 +34,21 @@ opt = optparse.OptionParser(option_list = [
                     help = 'offset to write the data to',
                     metavar = 'OFFSET',
                     default = 0),
+        make_option('-v',
+                    action = 'store_true',
+                    dest = 'verbose',
+                    help = 'show verbose output',
+                    default = False),	
 
 ])
 
 (options, args) = opt.parse_args()
+
+def syscmd(cmd):
+    if options.verbose == True:
+        print 'INFO %s' % cmd
+    os.system(cmd)
+
 
 depends = StringIO.StringIO()
 if options.depends:
@@ -60,16 +71,16 @@ if os.path.exists(zfs_root) and os.listdir(zfs_root):
     print 'Please make sure %s does not exist or is an empty directory' % zfs_root
     sys.exit(1)
 
-os.system('mkdir -p %s' % zfs_root)
+syscmd('mkdir -p %s' % zfs_root)
 
-os.system('rm -f %s' % options.output)
-os.system('truncate --size 10g %s' % options.output)
-os.system('losetup -o %s %s %s' % (options.offset, loop_dev, options.output))
+syscmd('rm -f %s' % options.output)
+syscmd('truncate --size 10g %s' % options.output)
+syscmd('losetup -o %s %s %s' % (options.offset, loop_dev, options.output))
 
-os.system('ln %s %s' % (loop_dev, dev))
+syscmd('ln %s %s' % (loop_dev, dev))
 
-os.system('zpool create -f %s -R %s %s' % (zfs_pool, zfs_root, dev))
-os.system('zfs create %s/%s' % (zfs_pool, zfs_fs))
+syscmd('zpool create -f %s -R %s %s' % (zfs_pool, zfs_root, dev))
+syscmd('zfs create %s/%s' % (zfs_pool, zfs_fs))
 
 files = dict([(f, manifest.get('manifest', f, vars = defines))
               for f in manifest.options('manifest')])
@@ -112,16 +123,16 @@ files = [(x, unsymlink(y)) for (x, y) in files]
 for name, hostname in files:
     depends.write('\t%s \\\n' % (hostname,))
     if name[:4] in [ '/usr' ]:
-        os.system('mkdir -p %s/`dirname %s`' % ('/zfs/', name))
-        os.system('cp -L %s %s/%s' % (hostname, '/zfs/', name))
+        syscmd('mkdir -p %s/`dirname %s`' % ('/zfs/', name))
+        syscmd('cp -L %s %s/%s' % (hostname, '/zfs/', name))
 
-os.system('zpool export %s' % zfs_pool)
-os.system('sleep 2')
-os.system('losetup -d %s' % loop_dev)
-os.system('rm %s' % dev)
+syscmd('zpool export %s' % zfs_pool)
+syscmd('sleep 2')
+syscmd('losetup -d %s' % loop_dev)
+syscmd('rm %s' % dev)
 
-os.system('chmod g+w %s' % options.output)
-os.system('chmod o+w %s' % options.output)
+syscmd('chmod g+w %s' % options.output)
+syscmd('chmod o+w %s' % options.output)
 
 depends.write('\n\n')
 depends.close()
