@@ -565,7 +565,7 @@ jni = java/jni/balloon.so java/jni/elf-loader.so java/jni/networking.so \
 	java/jni/stty.so java/jni/tracepoint.so java/jni/power.so
 
 usr.img: loader.img scripts/mkzfs.py usr.manifest $(jni)
-	$(src)/scripts/mkzfs.py -o $@ -d $@.d -m $(src)/usr.manifest \
+	sudo $(src)/scripts/mkzfs.py -o $@ -d $@.d -m $(src)/usr.manifest \
 		-D jdkbase=$(jdkbase) -D gccbase=$(gccbase) -D \
 		glibcbase=$(glibcbase) -D miscbase=$(miscbase) -s $(zfs-start)
 	$(call quiet, dd if=loader.img of=$@ conv=notrunc > /dev/null 2>&1)

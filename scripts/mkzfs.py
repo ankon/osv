@@ -60,16 +60,16 @@ if os.path.exists(zfs_root) and os.listdir(zfs_root):
     print 'Please make sure %s does not exist or is an empty directory' % zfs_root
     sys.exit(1)
 
-os.system('sudo mkdir -p %s' % zfs_root)
+os.system('mkdir -p %s' % zfs_root)
 
-os.system('sudo rm -f %s' % options.output)
-os.system('sudo truncate --size 10g %s' % options.output)
-os.system('sudo losetup -o %s %s %s' % (options.offset, loop_dev, options.output))
+os.system('rm -f %s' % options.output)
+os.system('truncate --size 10g %s' % options.output)
+os.system('losetup -o %s %s %s' % (options.offset, loop_dev, options.output))
 
-os.system('sudo ln %s %s' % (loop_dev, dev))
+os.system('ln %s %s' % (loop_dev, dev))
 
-os.system('sudo zpool create -f %s -R %s %s' % (zfs_pool, zfs_root, dev))
-os.system('sudo zfs create %s/%s' % (zfs_pool, zfs_fs))
+os.system('zpool create -f %s -R %s %s' % (zfs_pool, zfs_root, dev))
+os.system('zfs create %s/%s' % (zfs_pool, zfs_fs))
 
 files = dict([(f, manifest.get('manifest', f, vars = defines))
               for f in manifest.options('manifest')])
@@ -112,16 +112,16 @@ files = [(x, unsymlink(y)) for (x, y) in files]
 for name, hostname in files:
     depends.write('\t%s \\\n' % (hostname,))
     if name[:4] in [ '/usr' ]:
-        os.system('sudo mkdir -p %s/`dirname %s`' % ('/zfs/', name))
-        os.system('sudo cp -L %s %s/%s' % (hostname, '/zfs/', name))
+        os.system('mkdir -p %s/`dirname %s`' % ('/zfs/', name))
+        os.system('cp -L %s %s/%s' % (hostname, '/zfs/', name))
 
-os.system('sudo zpool export %s' % zfs_pool)
+os.system('zpool export %s' % zfs_pool)
 os.system('sleep 2')
-os.system('sudo losetup -d %s' % loop_dev)
-os.system('sudo rm %s' % dev)
+os.system('losetup -d %s' % loop_dev)
+os.system('rm %s' % dev)
 
-os.system('sudo chmod g+w %s' % options.output)
-os.system('sudo chmod o+w %s' % options.output)
+os.system('chmod g+w %s' % options.output)
+os.system('chmod o+w %s' % options.output)
 
 depends.write('\n\n')
 depends.close()
